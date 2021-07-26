@@ -1,0 +1,194 @@
+<html lang="ja">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>スイカ割りゲーム</title>
+    <meta name="og:image" property="og:image" content="" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+html, body {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+}
+.hidden {
+  display: none !important;
+}
+#suika {
+  width: 60px;
+  height: 60px;
+  background: 0px 0px url(./suika.png);
+  background-size: 60px 60px;
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  border-radius: 50%;
+}
+#suika.wareta {
+  width: 90px;
+  background: 0px 0px url(./wareta-suika.png);
+  background-size: 90px 60px;
+  left: -45px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.green {
+  color: green;
+}
+.red {
+  color: red;
+}
+.button-container {
+  margin-top: 16px;
+  height: 32px;
+}
+    </style>
+  </head>
+<body>
+  <div id="suika" class="hidden"></div>
+  <div id="start-modal" class="modal">
+    <div>
+      <img src="./suikawari.png" width="200px">
+    </div>
+    <div class="title green">スイカ割り</div>
+    <div>動くスイカをタッチして割ろう！</div>
+    <div>目隠しで難易度アップ</div>
+    <div class="button-container">
+      <button id="start-button">スタート</button>
+    </div>
+  </div>
+  <div id="restart-modal" class="hidden modal">
+    <div>
+      <img src="./success.png" width="200px">
+    </div>
+    <div class="title red">Success!!</div>
+    <div class="button-container">
+      <button id="restart-button" class="hidden">リスタート</button>
+    </div>
+  </div>
+<script>
+  const suikaRadius = 30;
+  const DEGREE = 10;
+  const DISTANCE = 5;
+
+  let windowWidth = document.documentElement.clientWidth;
+  let windowHeight = document.documentElement.clientHeight;
+
+  let x = windowWidth / 2;
+  let y = windowHeight / 2 - 150;
+  let deg = 0;
+
+  let addX = 0;
+  let addY = 0;
+  let addDeg = 0;
+
+  const startModal = document.getElementById("start-modal");
+  const startButton = document.getElementById("start-button");
+
+  const restartModal = document.getElementById("restart-modal");
+  const restartButton = document.getElementById("restart-button");
+
+  const suika = document.getElementById("suika");
+
+  function resizeHandler() {
+    windowWidth = document.documentElement.clientWidth;
+    windowHeight = document.documentElement.clientHeight;
+    x = windowWidth / 2;
+    y = windowHeight / 2 - 150;
+  }
+  window.addEventListener("resize", resizeHandler, false);
+
+  function startClickHandler() {
+    startModal.classList.add("hidden");
+    restartModal.classList.add("hidden");
+    restartButton.classList.add("hidden");
+
+    suika.classList.remove("hidden");
+    suika.classList.remove("wareta");
+
+    x = windowWidth / 2;
+    y = windowHeight / 2 - 150;
+    deg = 0;
+
+    addX = DISTANCE;
+    addY = -DISTANCE;
+    addDeg = DEGREE;
+  }
+  startButton.addEventListener("click", startClickHandler, false);
+  restartButton.addEventListener("click", startClickHandler, false);
+
+  function suikaClickHandler() {
+    deg = 0;
+
+    addX = 0;
+    addY = 0;
+    addDeg = 0;
+
+    suika.style.transform = `translate(${x}px, ${y}px) rotate(${deg}deg)`;
+    suika.classList.add("wareta");
+    restartModal.classList.remove("hidden");
+    setTimeout(function() {
+      restartButton.classList.remove("hidden");
+    }, 1500);
+  }
+  suika.addEventListener("mousedown", suikaClickHandler, false);
+  suika.addEventListener("touchstart", suikaClickHandler, false);
+
+  function draw() {
+    suika.style.transform = `translate(${x}px, ${y}px) rotate(${deg}deg)`;
+
+    if (x + addX > windowWidth - suikaRadius) { // 右の壁に当たった
+      if (addY > 0) { //下向き
+        addDeg = -DEGREE;
+      } else {
+        addDeg = DEGREE;
+      }
+      addX = -addX;
+    } else if (x + addX < suikaRadius) { //  左の壁に当たった
+      if (addY < 0) { //上向き
+        addDeg = -DEGREE;
+      } else {
+        addDeg = DEGREE;
+      }
+      addX = -addX;
+    }
+
+    if (y + addY > windowHeight - suikaRadius) { // 下の壁に当たった
+      if (addX < 0) { // 左向き
+        addDeg = -DEGREE;
+      } else {
+        addDeg = DEGREE;
+      }
+      addY = -addY;
+    } else if (y + addY < suikaRadius) { // 上の壁に当たった
+      if (addX > 0) {// 右向き
+        addDeg = -DEGREE;
+      } else {
+        addDeg = DEGREE;
+      }
+      addY = -addY;
+    }
+
+    x += addX;
+    y += addY;
+    deg += addDeg;
+  }
+
+  setInterval(draw, 10);
+</script>
+</body>
+</html>
